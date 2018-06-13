@@ -1,0 +1,20 @@
+{% extends 'master.twig' %}
+{% block content %}
+<form method="post" action="/contact">
+    <p>First name:</p><input type="text" name="fname"><br/>
+    <p>Last name:</p><input type="text" name="lname"><br/>
+    <p>Phone number:</p><input type="text" name="pnumber"><br/>
+    <P>Email:</P><input type="text" name="email"><br/>
+    <P>Title:</P><input type="text" name="title"><br/>
+    <p>Message</p>
+    <textarea name="msg" rows="4" cols="50"></textarea>
+    <br/>
+    <br/>
+    <br/>
+    <p>
+        <input type="submit" value="Submit">
+    </p>
+</form>
+<br/>
+
+{% endblock %}

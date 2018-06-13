@@ -29,3 +29,6 @@ $app->get('/faq', function ($request, $response, $args) {
         "title" => "FAQ"
     ));
 });
+
+$app->get('/contact', '\Controllers\contact:viewContactForm');
+$app->post('/contact', '\Controllers\contact:contactFormConfirmation');
