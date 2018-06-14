@@ -1,21 +1,21 @@
 <?php
-
 /**
  * Created by PhpStorm.
  * User: lamp
- * Date: 6/11/18
- * Time: 10:07 PM
+ * Date: 6/12/18
+ * Time: 9:19 PM
  */
 
 namespace controllers;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Interop\Container\ContainerInterface;
+use Carbon\Carbon;
 use PHPMailer\PHPMailer\PHPMailer;
 
-class contact
-{
 
+class appointment
+{
     /**
      * contact constructor.
      */
@@ -42,16 +42,6 @@ class contact
             $errors[] ='Must have a valid email';
         }
 
-        if(!$this->hasMimLength(32,$inputs['msg']))
-        {
-            $errors[] ='Message must have at least 32 characters';
-        }
-
-        if(!$this->hasMimLength(5,$inputs['title']))
-        {
-            $errors[] ='Title must have at least 5 characters';
-        }
-
         if(!$this->isNumeric($inputs['pnumber']))
         {
             $errors[] ='Phone number must contain only digits';
@@ -66,7 +56,43 @@ class contact
         {
             $errors[] ='Phone number cannot have more than 11 numbers';
         }
+
+        if(!$this->isDateValid($inputs['date']))
+        {
+            $errors[] = 'Must have a valid date';
+        }
+
+        if(!$this->hasTwentyFourHoursPassed($inputs['date']))
+        {
+            $errors[] = 'Appointment need to be made 24 hours in advance';
+        }
         return $errors;
+    }
+
+    protected function isDateValid($input)
+    {
+        $dt = explode('/',$input);
+        if(checkdate($dt[0],$dt[1],$dt[2]))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    protected function hasTwentyFourHoursPassed($input)
+    {
+        $dt = Carbon::now('America/New_York')->addDay(1);
+        if($dt->format('m/d/Y') == $input)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     protected function isNumeric($input)
@@ -117,38 +143,37 @@ class contact
         }
     }
 
-    public function viewContactForm(ServerRequestInterface $request, ResponseInterface $response, $args)
+    public function viewAppointmentForm(ServerRequestInterface $request, ResponseInterface $response, $args)
     {
         $crsf = bin2hex(random_bytes(10));
         $_SESSION['crsf'] = $crsf;
-        return $this->container['view']->render($response, 'contact.twig', array(
-            "title" => "Contact",
+        return $this->container['view']->render($response, 'appointment.twig', array(
+            "title" => "Appointment",
             'crsf' => $crsf
         ));
     }
 
-    public function contactFormConfirmation(ServerRequestInterface $request, ResponseInterface $response, $args)
+    public function appointmentFormConfirmation(ServerRequestInterface $request, ResponseInterface $response, $args)
     {
         $inputs = [
             'f_name' => $request->getParsedBody()['fname'],
             'l_name' => $request->getParsedBody()['lname'],
             'pnumber' => $request->getParsedBody()['pnumber'],
             'email' => $request->getParsedBody()['email'],
-            'msg' => $request->getParsedBody()['msg'],
-            'title' => $request->getParsedBody()['title'],
+            'date' => $request->getParsedBody()['datepicker'],
+            'title' => 'appointment',
         ];
-
         $errors = $this->validation($inputs);
-
         if($errors != [])
         {
             return $this->container['view']->render($response, 'errors.twig', array(
-                "title" => "Contact Errors",
+                "title" => "Appointment Errors",
                 "errors" => $errors
             ));
         }
         {
             $mail = new PHPMailer;
+
             //Tell PHPMailer to use SMTP
             $mail->isSMTP();
             $mail->SMTPOptions = array( 'ssl' => array( 'verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true ) );
@@ -157,6 +182,7 @@ class contact
             // 1 = client messages
             // 2 = client and server messages
             $mail->SMTPDebug = 0;
+
             $mail->Host = 'smtp.gmail.com';
             //Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
             $mail->Port = 587;
@@ -174,12 +200,13 @@ class contact
             $mail->addAddress('glory.abrokwah@gmail.com');
             //Set the subject line
             $mail->Subject = $inputs['title'];
-            $mail->msgHTML('From: '.$inputs['f_name'].' '.$inputs['l_name'].' '.$inputs['title'].'. Phone Number: '.$inputs['pnumber'].'<br>'.$inputs['email'].'<br>'.$inputs['msg']);
+            $mail->msgHTML('From: '.$inputs['f_name'].' '.$inputs['l_name'].' '.$inputs['title'].'. Phone Number: '.$inputs['pnumber'].'<br>'.$inputs['email'].'<br> Appointment date :'.$inputs['date']);
+
             if (!$mail->send())
             {
                 return $this->container['view']->render($response, 'errors.twig', array(
-                    "title" => "Contact Errors",
-                    "errors" => ['msg could not be sent']
+                    "title" => "Appointment Errors",
+                    "errors" => ['Appointment could not be sent']
                 ));
             }
             else

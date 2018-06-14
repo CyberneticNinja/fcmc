@@ -31,4 +31,6 @@ $app->get('/faq', function ($request, $response, $args) {
 });
 
 $app->get('/contact', '\Controllers\contact:viewContactForm');
-$app->post('/contact', '\Controllers\contact:contactFormConfirmation');
+$app->post('/contact', '\Controllers\contact:contactFormConfirmation')->add($csrf);
+$app->get('/appointment', '\Controllers\appointment:viewAppointmentForm');
+$app->post('/appointment', '\Controllers\appointment:appointmentFormConfirmation')->add($csrf);

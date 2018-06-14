@@ -1,21 +1,15 @@
 {% extends 'master.twig' %}
 {% block content %}
-<form method="post" action="/contact">
+<form method="post" action="/appointment">
     <p>First name:</p><input type="text" name="fname"><br/>
     <p>Last name:</p><input type="text" name="lname"><br/>
     <p>Phone number:</p><input type="text" name="pnumber"><br/>
     <P>Email:</P><input type="text" name="email"><br/>
-    <P>Title:</P><input type="text" name="title"><br/>
     <input type="hidden" id="crsf" name="crsf" value="{{ crsf }}">
-    <p>Message</p>
-    <textarea name="msg" rows="4" cols="50"></textarea>
-    <br/>
-    <br/>
-    <br/>
+    <p>Date: </p><input type="text" name="datepicker" id="datepicker"><br/>
     <p>
         <input type="submit" value="Submit">
     </p>
 </form>
-<br/>
 
 {% endblock %}
